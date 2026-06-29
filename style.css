@@ -1,0 +1,260 @@
+/* GENEL SIFIRLAMA */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    user-select: none;
+}
+
+html, body {
+    width: 100%;
+    height: 100dvh; 
+    background-color: #1a1a1a; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; 
+}
+
+/* ================= 16:9 KESİN ORAN KİLİDİ ================= */
+.app-container {
+    position: relative;
+    width: 100vw;
+    height: 56.25vw;
+    max-height: 100dvh; 
+    max-width: 177.78dvh;
+    background-color: #e4e4e4;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    margin: auto;
+}
+
+/* ================= GÖRSEL KATMANLAR ================= */
+.viewer-wrapper {
+    position: absolute;
+    inset: 0;
+}
+
+.render-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover; 
+    pointer-events: none;
+    transition: opacity 0.4s ease-in-out; 
+}
+
+/* ================= GÖRÜNMEZ TIKLAMA ALANLARI VE İŞARETÇİLER ================= */
+.hotspot {
+    position: absolute;
+    cursor: pointer;
+    background: transparent; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* SENİN ORİJİNAL MİLİMETRİK KOORDİNATLARIN GERİ GELDİ (Bu alanların tamamı tıklanabilirdir!) */
+#hotspot-koltuk  { top: 45.37%; left: 3.69%; width: 64.79%; height: 41.94%; z-index: 55; }
+#hotspot-berjer  { top: 42.22%; left: 73.33%; width: 25.15%; height: 38.05%; z-index: 55; }
+#hotspot-kirlent { top: 47.77%; left: 42.39%; width: 11.45%; height: 18.61%; z-index: 60; }
+#hotspot-bel     { top: 54.35%; left: 22.03%; width: 8.28%; height: 15.18%; z-index: 61; }
+#hotspot-ayak    { top: 79.62%; left: 0%; width: 100%; height: 20.37%; z-index: 50; }
+
+/* NEFES ALAN PARLAK HALKA EFEKTİ (Sadece Görsel İpucudur) */
+.hotspot-dot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5), 0 0 0 4px rgba(255,255,255,0.3);
+    opacity: 0; 
+    transform: scale(0);
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    pointer-events: none; /* Bu nokta tıklamayı engellemez, tıklama arkadaki büyük hotspot div'ine geçer */
+}
+
+/* Dışarı doğru dalgalanan efekt halkası */
+.hotspot-dot::after {
+    content: '';
+    position: absolute;
+    inset: -12px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: hotspotPulse 2s infinite ease-out;
+}
+
+@keyframes hotspotPulse {
+    0% { transform: scale(0.5); opacity: 1; }
+    100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* JS 3 Saniye boyunca dokunulmadığında bu sınıfı ekleyecek */
+.show-hints .hotspot-dot {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* ================= FAREYİ TAKİP EDEN TOOLTIP ================= */
+.cursor-tooltip {
+    position: fixed; 
+    top: 0; left: 0;
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    padding: 10px 18px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    pointer-events: none; 
+    z-index: 9999;
+    opacity: 0;
+    transform: translate(-50%, -150%);
+    transition: opacity 0.2s ease;
+    backdrop-filter: blur(5px);
+}
+
+/* ================= ÖLÇÜLER EKRANI (OVERLAY) ================= */
+.measurements-overlay {
+    position: fixed; 
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 99999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+}
+.measurements-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+.measurements-overlay img {
+    max-width: 95%;
+    max-height: 95%;
+    border-radius: 12px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+/* ================= BUTONLAR (MASAÜSTÜ) ================= */
+.left-actions {
+    position: absolute;
+    bottom: 30px;
+    left: 30px;
+    z-index: 100;
+}
+
+.bottom-actions {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    display: flex;
+    gap: 15px;
+    z-index: 100;
+}
+
+.glass-btn {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    color: #111;
+    padding: 12px 25px;
+    border-radius: 30px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.glass-btn:hover { background: #fff; transform: translateY(-2px); }
+.action-highlight { background: rgba(20, 20, 20, 0.9); color: #fff; border-color: #000; }
+.action-highlight:hover { background: #000; color: #fff; }
+.whatsapp-btn { background: rgba(37, 211, 102, 0.95); color: white; border-color: #25D366; }
+.whatsapp-btn:hover { background: #128C7E; color: white; transform: translateY(-2px); }
+
+.fs-btn {
+    position: absolute;
+    top: 30px; right: 30px;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+    width: 45px; height: 45px;
+    border-radius: 50%;
+    cursor: pointer; font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+.fs-btn:hover { transform: scale(1.1); background: #fff;}
+
+
+/* ================= MOBİL (DİKEY - PORTRAIT) DÜZELTME ================= */
+@media screen and (max-width: 768px) and (orientation: portrait) {
+    
+    html, body {
+        background-color: #e4e4e4; 
+        align-items: center; 
+        padding-top: 0; 
+    }
+    
+    .app-container {
+        box-shadow: none; 
+    }
+
+    .left-actions {
+        position: fixed;
+        bottom: calc(140px + env(safe-area-inset-bottom, 20px)); 
+        left: 5%;
+        width: 90%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .bottom-actions { 
+        position: fixed;
+        bottom: calc(25px + env(safe-area-inset-bottom, 20px));
+        left: 5%;
+        width: 90%;
+        display: flex;
+        flex-direction: column; 
+        justify-content: center;
+        gap: 12px;
+        transform: none; 
+    }
+
+    .glass-btn {
+        width: 100%;
+        padding: 16px; 
+        font-size: 14px;
+    }
+
+    .fs-btn { 
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .cursor-tooltip { display: none !important; }
+}
+
+/* ================= MOBİL (YATAY - LANDSCAPE) UYUMU ================= */
+@media screen and (max-width: 950px) and (orientation: landscape) {
+    html, body { background-color: #1a1a1a; align-items: center; padding-top: 0; }
+    .bottom-actions { position: absolute; bottom: 10px; right: 10px; left: auto; width: auto; transform: scale(0.7); transform-origin: bottom right; }
+    .left-actions { position: absolute; bottom: 10px; left: 10px; width: auto; transform: scale(0.7); transform-origin: bottom left; }
+    .fs-btn { position: absolute; top: 10px; right: 10px; transform: scale(0.75); }
+    .cursor-tooltip { display: none !important; }
+}
