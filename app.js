@@ -18,7 +18,7 @@ let indexler = {
 let mekanizmaState = 0; 
 let measurementsTimer;
 let tooltipTimer;
-let hintsTimer; // 3 Saniyelik akıllı işaretçi sayacı
+let hintsTimer; 
 
 // ================= GÖRSELLERİ GÜNCELLE =================
 function updateUI() {
@@ -61,10 +61,7 @@ function cycleItem(tur) {
 
 // ================= AKILLI SEÇİM İŞARETÇİLERİ MANTIĞI =================
 function resetHintsTimer() {
-    // Dokunma algılandığı an halkaları hemen gizle sınıfını uçurur
     document.getElementById('app-container').classList.remove('show-hints');
-    
-    // Eski sayacı iptal et ve 3 saniyelik yeni sayaç kur
     clearTimeout(hintsTimer);
     hintsTimer = setTimeout(() => {
         document.getElementById('app-container').classList.add('show-hints');
@@ -120,7 +117,6 @@ function toggleMekanizma() {
         kirlentImg.style.opacity = "0"; 
         belImg.style.opacity = "0";
     }
-    
     updateUI(); 
 }
 
@@ -134,6 +130,26 @@ function showMeasurements() {
         overlay.classList.add('hidden');
     }, 5000); 
 }
+
+// ================= VİDEO (MEKANDA İNCELE) MANTIĞI =================
+const videoOverlay = document.getElementById('video-overlay');
+const sceneVideo = document.getElementById('scene-video');
+
+function playSceneVideo() {
+    videoOverlay.classList.remove('hidden');
+    sceneVideo.currentTime = 0; 
+    sceneVideo.play();
+}
+
+function closeVideo() {
+    videoOverlay.classList.add('hidden');
+    sceneVideo.pause();
+}
+
+// Video kendi kendine bittiğinde kapat
+sceneVideo.addEventListener('ended', () => {
+    closeVideo();
+});
 
 // ================= DANIŞMANA İLET (WHATSAPP) =================
 function shareWhatsApp() {
@@ -189,10 +205,10 @@ function updateFsIcon() {
     }
 }
 
-// DOKUNMA TAKİP EDİCİLERİ (İşaretçileri gizleyip 3 saniye sayar)
+// DOKUNMA TAKİP EDİCİLERİ
 document.addEventListener('click', resetHintsTimer);
 document.addEventListener('touchstart', resetHintsTimer);
 
 // UYGULAMAYI BAŞLAT
 updateUI();
-resetHintsTimer(); // İlk açılışta 3 saniyelik geri sayımı başlatır
+resetHintsTimer();
